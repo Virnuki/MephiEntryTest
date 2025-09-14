@@ -26,17 +26,21 @@
 """
 
 
-def count_neighbors(table: list, row: int, col: int) -> int:  # подсчёт соседей клетки
-    return sum([sum(table[row - 1 + i][col - 1:col + 2]) for i in range(3)]) - table[row][col]
+def count_neighbors(table: list, row: int, col: int, l_y: int, l_x: int) -> int:  # подсчёт соседей клетки
+    count = table[row][col] * -1
+    for i in range(3):
+        for j in range(3):
+            count += table[(row - 1 + i) % l_y][(col - 1 + j) % l_x]
+    return count
 
 
 def create_table(row: int, col: int) -> list:  # создаём двумерный сипсок больше ввёденного
-    return [[0 for _ in range(col + 2)] for _ in range(row + 2)]
+    return [[0 for _ in range(col)] for _ in range(row)]
 
 
 def print_table(table: list) -> None:  # Выводим поле в нужном формате
-    for row in table[1:-1]:
-        for elem in row[1:-1]:
+    for row in table:
+        for elem in row:
             if elem == 1:
                 print('X', end='')
             else:
@@ -46,9 +50,10 @@ def print_table(table: list) -> None:  # Выводим поле в нужном
 
 def next_state(table: list, row: int, col: int) -> list:  # создаём следующее состояние
     next_table = create_table(row, col)
-    for x in range(1, row + 1):
-        for y in range(1, col + 1):
-            neighbors = count_neighbors(table, x, y)
+    for x in range(row):
+        for y in range(col):
+            neighbors = count_neighbors(table, x, y, row, col)
+            print(neighbors)
             if table[x][y] == 1 and 2 <= neighbors <= 3:
                 next_table[x][y] = 1
             elif table[x][y] == 0 and neighbors == 3:
@@ -58,24 +63,9 @@ def next_state(table: list, row: int, col: int) -> list:  # создаём сл�
     return next_table
 
 
-def rect_to_tore(table: list) -> list:
-    # Костыль превращающий прямоугольное поле в тор, даёт неправельные результаты при размерах поля < 3
-
-    for i in range(1, len(table) + 1):
-        table[i][0] = table[i][-2]
-        table[i][-1] = table[i][1]
-    table[0] = table[-2].copy()
-    table[-1] = table[1].copy()
-    table[0][0] = table[-2][-2]
-    table[-1][0] = table[1][-2]
-    table[-1][-1] = table[1][1]
-    table[0][-1] = table[-2][1]
-    return table
-
-
 if __name__ == '__main__':
     row, col = map(int, input().split())
     table = create_table(row, col)
-    for i in range(1, row + 1):
-        table[i] = [0, *list(map(lambda s: int(s == 'X'), input().split())), 0]
-    print_table(next_state(rect_to_tore(table), row, col))
+    for i in range(row):
+        table[i] = list(map(lambda s: int(s == 'X'), input().split()))
+    print_table(next_state(table, row, col))
